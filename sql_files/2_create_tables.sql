@@ -13,12 +13,9 @@ CREATE TABLE public.customers -- parent table
     last_name VARCHAR(50),
     state VARCHAR(50)
 );
--- add the address columns
+-- add the address column and set default value
 ALTER TABLE customers
-ADD COLUMN address VARCHAR(50);
--- set default value
-ALTER TABLE customers
-ALTER COLUMN address SET DEFAULT 'xxxx';
+ADD COLUMN address VARCHAR(50) DEFAULT ('xxxx');
 
 
 CREATE TABLE public.sellers -- parent table
