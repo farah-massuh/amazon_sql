@@ -1,1 +1,2 @@
-CREATE DATABASE amazon_sql
+-- Create the database
+CREATE DATABASE amazon_sql;
