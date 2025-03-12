@@ -40,7 +40,7 @@ CREATE TABLE public.orders
     order_date DATE,
     customer_id INT, -- Foreign Key
     order_status VARCHAR(50),
-    product_id INT, -- Foreign Key
+    product_id INT, -- Foreign Key (this is a mistake)
     seller_id INT, -- Foreign Key
     CONSTRAINT orders_fk_seller FOREIGN KEY (seller_id) REFERENCES sellers(seller_id),
     CONSTRAINT orders_fk_products FOREIGN KEY (product_id) REFERENCES products(product_id)
@@ -55,6 +55,10 @@ DROP COLUMN seller_id;
 ALTER TABLE orders
 ADD COLUMN seller_id INT,
 ADD COLUMN order_status VARCHAR(50);
+-- add customer_id and seller_id constraint (was dropped before)
+ALTER TABLE orders
+ADD CONSTRAINT orders_fk_customers FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
+ADD CONSTRAINT orders_fk_sellers FOREIGN KEY (seller_id) REFERENCES sellers(seller_id);
 
 
 CREATE TABLE public.order_items
