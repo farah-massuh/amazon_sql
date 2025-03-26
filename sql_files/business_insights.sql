@@ -97,3 +97,16 @@ SELECT
     -- retrieves the previos row's value (if no value, then NULL)
     LAG(total_sale, 1) OVER (ORDER BY year, month) AS last_month_sale
 FROM month_total_sales_past_year;
+
+
+
+/*----------
+5. Customers with no purchases
+Find customers who have registered but never placed an order.
+----------*/
+SELECT * 
+FROM customers
+WHERE customer_id NOT IN (
+    SELECT DISTINCT customer_id
+    FROM orders
+);
