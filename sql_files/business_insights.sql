@@ -38,10 +38,33 @@ SELECT
     p.category_id,
     c.category_name,
     ROUND(SUM(oi.total_sale)) AS total_sale,
-    ROUND((SUM(oi.total_sale)::NUMERIC * 100 -- to get decimals
+    ROUND((SUM(oi.total_sale)::NUMERIC * 100 -- NUMERIC to get decimals
         / (SELECT SUM(total_sale) FROM order_items)::NUMERIC), 2) AS percentage_contribution
 FROM order_items oi
-JOIN products p ON p.product_id = oi.product_id
-LEFT JOIN category c ON c.category_id = p.category_id
+JOIN products p 
+ON p.product_id = oi.product_id
+LEFT JOIN category c 
+ON c.category_id = p.category_id
 GROUP BY 1, 2
 ORDER BY 3 DESC;
+
+
+
+/*----------
+3. Average Order Value (AOV)
+Compute the average order value for each customer.
+Include only customers with more than 5 orders.
+----------*/
+SELECT
+    co.customer_id,
+    CONCAT(co.first_name, ' ', co.last_name) AS full_name,
+    COUNT(o.order_id) AS total_orders,
+    ROUND(SUM(oi.total_sale)::NUMERIC / COUNT(o.order_id),2) AS average_order_value
+FROM customers co
+JOIN orders o
+ON o.customer_id = co.customer_id
+JOIN order_items oi
+ON oi.order_id= o.order_id
+GROUP BY 1
+HAVING COUNT(o.order_id) > 5
+ORDER BY 4 DESC;
