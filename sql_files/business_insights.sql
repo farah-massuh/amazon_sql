@@ -101,7 +101,7 @@ FROM month_total_sales_past_year;
 
 
 /*----------
-5. Customers with no purchases
+5. Customers with No Purchases
 Find customers who have registered but never placed an order.
 ----------*/
 SELECT * 
@@ -110,3 +110,31 @@ WHERE customer_id NOT IN (
     SELECT DISTINCT customer_id
     FROM orders
 );
+
+
+
+/*----------
+6. Best-Selling categories by State
+Identify the best-selling product category for each state.
+Include the total sales for that category within each state.
+----------*/
+WITH ranked_sales AS (
+    SELECT
+        c.state,
+        cat.category_name,
+        SUM(oi.total_sale) AS total_sale,
+        RANK() OVER(PARTITION BY c.state ORDER BY SUM(oi.total_sale) DESC) AS rank
+    FROM orders o
+    JOIN customers c ON o.customer_id = c.customer_id
+    JOIN order_items oi ON o.order_id = oi.order_id
+    JOIN products p ON oi.product_id = p.product_id
+    JOIN category cat ON cat.category_id = p.category_id
+    GROUP BY c.state, cat.category_name
+)
+SELECT 
+    state, 
+    category_name, 
+    ROUND(total_sale::NUMERIC, 2) as total_sale
+FROM ranked_sales
+WHERE rank = 1
+ORDER BY state, total_sale DESC;
