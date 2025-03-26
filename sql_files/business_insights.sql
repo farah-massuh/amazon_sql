@@ -38,8 +38,8 @@ SELECT
     p.category_id,
     c.category_name,
     ROUND(SUM(oi.total_sale)) AS total_sale,
-    ROUND((SUM(oi.total_sale)::NUMERIC * 100 -- NUMERIC to get decimals
-        / (SELECT SUM(total_sale) FROM order_items)::NUMERIC), 2) AS percentage_contribution
+    ROUND((SUM(oi.total_sale::NUMERIC) * 100 -- NUMERIC to get decimals
+        / (SELECT SUM(total_sale::NUMERIC) FROM order_items)), 2) AS percentage_contribution
 FROM order_items oi
 JOIN products p 
 ON p.product_id = oi.product_id
@@ -59,7 +59,7 @@ SELECT
     co.customer_id,
     CONCAT(co.first_name, ' ', co.last_name) AS full_name,
     COUNT(o.order_id) AS total_orders,
-    ROUND(SUM(oi.total_sale)::NUMERIC / COUNT(o.order_id),2) AS average_order_value
+    ROUND(SUM(oi.total_sale::NUMERIC) / COUNT(o.order_id),2) AS average_order_value
 FROM customers co
 JOIN orders o
 ON o.customer_id = co.customer_id
@@ -68,3 +68,32 @@ ON oi.order_id= o.order_id
 GROUP BY 1
 HAVING COUNT(o.order_id) > 5
 ORDER BY 4 DESC;
+
+
+
+/*----------
+4. Monthly Sales Trend
+Query monthly total sales over the past year.
+Display the sales trend, grouping by month, return current month sale, and last month sale
+----------*/
+WITH month_total_sales_past_year AS (
+    SELECT
+        EXTRACT(MONTH FROM o.order_date) AS month,
+        EXTRACT(YEAR From o.order_date) AS year,
+        ROUND(SUM(oi.total_sale::NUMERIC), 2) AS total_sale
+    FROM orders as o
+    JOIN
+    order_items AS oi
+    ON oi.order_id = o.order_id
+    WHERE o.order_date >= CURRENT_DATE - INTERVAL '1 year'
+    GROUP BY 1, 2
+    ORDER BY year, month
+)
+-- compare current month sales with last month
+SELECT
+    year,
+    month,
+    total_sale AS current_month_sale,
+    -- retrieves the previos row's value (if no value, then NULL)
+    LAG(total_sale, 1) OVER (ORDER BY year, month) AS last_month_sale
+FROM month_total_sales_past_year;
