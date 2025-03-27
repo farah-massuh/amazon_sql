@@ -123,6 +123,7 @@ WITH ranked_sales AS (
         c.state,
         cat.category_name,
         SUM(oi.total_sale) AS total_sale,
+        -- partitions by state, orders by the sum of the total sale, and then gets the rank for the entire data
         RANK() OVER(PARTITION BY c.state ORDER BY SUM(oi.total_sale) DESC) AS rank
     FROM orders o
     JOIN customers c ON o.customer_id = c.customer_id
