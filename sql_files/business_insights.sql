@@ -18,10 +18,8 @@ SELECT
     ROUND(SUM(total_sale)) AS total_sale,
     COUNT(o.order_id) AS total_orders
 FROM orders o
-JOIN order_items oi
-ON oi.order_id = o.order_id
-JOIN products p
-ON p.product_id = oi.product_id
+JOIN order_items oi ON oi.order_id = o.order_id
+JOIN products p ON p.product_id = oi.product_id
 GROUP BY 1, 2
 ORDER BY 3 DESC
 LIMIT 10;
@@ -41,10 +39,8 @@ SELECT
     ROUND((SUM(oi.total_sale::NUMERIC) * 100 -- NUMERIC to get decimals
         / (SELECT SUM(total_sale::NUMERIC) FROM order_items)), 2) AS percentage_contribution
 FROM order_items oi
-JOIN products p 
-ON p.product_id = oi.product_id
-LEFT JOIN category c 
-ON c.category_id = p.category_id
+JOIN products p ON p.product_id = oi.product_id
+LEFT JOIN category c ON c.category_id = p.category_id
 GROUP BY 1, 2
 ORDER BY 3 DESC;
 
@@ -61,10 +57,8 @@ SELECT
     COUNT(o.order_id) AS total_orders,
     ROUND(SUM(oi.total_sale::NUMERIC) / COUNT(o.order_id),2) AS average_order_value
 FROM customers co
-JOIN orders o
-ON o.customer_id = co.customer_id
-JOIN order_items oi
-ON oi.order_id= o.order_id
+JOIN orders o ON o.customer_id = co.customer_id
+JOIN order_items oi ON oi.order_id= o.order_id
 GROUP BY 1
 HAVING COUNT(o.order_id) > 5
 ORDER BY 4 DESC;
@@ -82,19 +76,19 @@ WITH month_total_sales_past_year AS (
         EXTRACT(YEAR From o.order_date) AS year,
         ROUND(SUM(oi.total_sale::NUMERIC), 2) AS total_sale
     FROM orders as o
-    JOIN
-    order_items AS oi
-    ON oi.order_id = o.order_id
+    JOIN order_items AS oi ON oi.order_id = o.order_id
     WHERE o.order_date >= CURRENT_DATE - INTERVAL '1 year'
     GROUP BY 1, 2
-    ORDER BY year, month
+    ORDER BY 
+        year,
+        month
 )
 -- compare current month sales with last month
 SELECT
     year,
     month,
     total_sale AS current_month_sale,
-    -- retrieves the previos row's value (if no value, then NULL)
+    -- retrieves the previous row's value (if no value, then NULL)
     LAG(total_sale, 1) OVER (ORDER BY year, month) AS last_month_sale
 FROM month_total_sales_past_year;
 
@@ -130,7 +124,9 @@ WITH ranked_sales AS (
     JOIN order_items oi ON o.order_id = oi.order_id
     JOIN products p ON oi.product_id = p.product_id
     JOIN category cat ON cat.category_id = p.category_id
-    GROUP BY c.state, cat.category_name
+    GROUP BY 
+        c.state, 
+        cat.category_name
 )
 SELECT 
     state, 
@@ -138,4 +134,43 @@ SELECT
     ROUND(total_sale::NUMERIC, 2) as total_sale
 FROM ranked_sales
 WHERE rank = 1
-ORDER BY state, total_sale DESC;
+ORDER BY 
+    state, 
+    total_sale DESC;
+
+
+
+/*----------
+7. Customer Lifetime Value (CLTV)
+Calculate the total value of orders placed by each customer over their lifetime.
+Rank customers based on their CLTV.
+----------*/
+SELECT
+    c.customer_id,
+    CONCAT(c.first_name, ' ', c.last_name) AS full_name,
+    ROUND(SUM(oi.total_sale::NUMERIC),2) AS CLTV,
+    -- tied values get the same rank and no gaps in rank numbers
+    DENSE_RANK() OVER (ORDER BY SUM(oi.total_sale) DESC) AS customer_ranking
+FROM orders o
+JOIN customers c ON c.customer_id = o.customer_id
+JOIN order_items oi ON oi.order_id = o.order_id
+GROUP BY 
+    c.customer_id, 
+    full_name;
+
+
+
+/*----------
+8. Inventory Stock Alerts
+Query products with stock levels below a certain threshold (e.g., less than 10 units).
+Include last restock date and warehouse information.
+----------*/
+SELECT
+    i.inventory_id,
+    p.product_name,
+    i.stock AS current_stock_left,
+    i.last_stock_date,
+    i.warehouse_id
+FROM inventory i
+JOIN products p ON p.product_id = i.product_id
+WHERE i.stock < 10;
