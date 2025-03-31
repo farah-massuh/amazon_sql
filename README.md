@@ -56,8 +56,8 @@ This file runs all queries and creates the stored procedure for inventory automa
 SELECT
     oi.product_id,
     p.product_name,
-    ROUND(SUM(total_sale)) AS total_sale,
-    COUNT(o.order_id) AS total_orders
+    ROUND(SUM(total_sale)) total_sale,
+    COUNT(o.order_id) total_orders
 FROM orders o
 JOIN order_items oi ON oi.order_id = o.order_id
 JOIN products p ON p.product_id = oi.product_id
@@ -72,8 +72,8 @@ LIMIT 10;
 SELECT
     p.category_id,
     c.category_name,
-    ROUND(SUM(oi.total_sale)) AS total_sale,
-    ROUND((SUM(oi.total_sale::NUMERIC) * 100 / (SELECT SUM(total_sale::NUMERIC) FROM order_items)), 2) AS percentage_contribution
+    ROUND(SUM(oi.total_sale)) total_sale,
+    ROUND((SUM(oi.total_sale::NUMERIC) * 100 / (SELECT SUM(total_sale::NUMERIC) FROM order_items)), 2) percentage_contribution
 FROM order_items oi
 JOIN products p ON p.product_id = oi.product_id
 LEFT JOIN category c ON c.category_id = p.category_id
@@ -86,9 +86,9 @@ ORDER BY 3 DESC;
 ```sql
 SELECT
     co.customer_id,
-    CONCAT(co.first_name, ' ', co.last_name) AS full_name,
-    COUNT(o.order_id) AS total_orders,
-    ROUND(SUM(oi.total_sale::NUMERIC) / COUNT(o.order_id),2) AS average_order_value
+    CONCAT(co.first_name, ' ', co.last_name)  full_name,
+    COUNT(o.order_id) total_orders,
+    ROUND(SUM(oi.total_sale::NUMERIC) / COUNT(o.order_id),2) average_order_value
 FROM customers co
 JOIN orders o ON o.customer_id = co.customer_id
 JOIN order_items oi ON oi.order_id= o.order_id
@@ -102,19 +102,19 @@ ORDER BY 4 DESC;
 ```sql
 WITH month_total_sales_past_year AS (
     SELECT
-        EXTRACT(MONTH FROM o.order_date) AS month,
-        EXTRACT(YEAR From o.order_date) AS year,
-        ROUND(SUM(oi.total_sale::NUMERIC), 2) AS total_sale
-    FROM orders as o
-    JOIN order_items AS oi ON oi.order_id = o.order_id
+        EXTRACT(MONTH FROM o.order_date) month,
+        EXTRACT(YEAR From o.order_date) year,
+        ROUND(SUM(oi.total_sale::NUMERIC), 2) total_sale
+    FROM orders o
+    JOIN order_items oi ON oi.order_id = o.order_id
     WHERE o.order_date >= CURRENT_DATE - INTERVAL '1 year'
     GROUP BY 1, 2
 )
 SELECT
     year,
     month,
-    total_sale AS current_month_sale,
-    LAG(total_sale, 1) OVER (ORDER BY year, month) AS last_month_sale
+    total_sale current_month_sale,
+    LAG(total_sale, 1) OVER (ORDER BY year, month) last_month_sale
 FROM month_total_sales_past_year;
 ```
 **Insight**: Sales trends fluctuate monthly with noticeable seasonal patterns. Comparing current and previous months helps detect growth or decline.
@@ -136,22 +136,22 @@ WITH ranked_sales AS (
     SELECT
         c.state,
         cat.category_name,
-        SUM(oi.total_sale) AS total_sale,
-        RANK() OVER(PARTITION BY c.state ORDER BY SUM(oi.total_sale) DESC) AS rank
+        SUM(oi.total_sale) total_sale,
+        RANK() OVER(PARTITION BY c.state ORDER BY SUM(oi.total_sale) DESC) rank
     FROM orders o
     JOIN customers c ON o.customer_id = c.customer_id
     JOIN order_items oi ON o.order_id = oi.order_id
     JOIN products p ON oi.product_id = p.product_id
     JOIN category cat ON cat.category_id = p.category_id
-    GROUP BY c.state, cat.category_name
+    GROUP BY 1, 2
 )
 SELECT 
     state, 
     category_name, 
-    ROUND(total_sale::NUMERIC, 2) as total_sale
+    ROUND(total_sale::NUMERIC, 2) total_sale
 FROM ranked_sales
 WHERE rank = 1
-ORDER BY state, total_sale DESC;
+ORDER BY 1, 3 DESC;
 ```
 **Insight**: Different states show varied preferences, enabling region-specific marketing strategies.
 
@@ -159,13 +159,13 @@ ORDER BY state, total_sale DESC;
 ```sql
 SELECT
     c.customer_id,
-    CONCAT(c.first_name, ' ', c.last_name) AS full_name,
-    ROUND(SUM(oi.total_sale::NUMERIC),2) AS CLTV,
-    DENSE_RANK() OVER (ORDER BY SUM(oi.total_sale) DESC) AS customer_ranking
+    CONCAT(c.first_name, ' ', c.last_name) full_name,
+    ROUND(SUM(oi.total_sale::NUMERIC),2) CLTV,
+    DENSE_RANK() OVER (ORDER BY SUM(oi.total_sale) DESC) customer_ranking
 FROM orders o
 JOIN customers c ON c.customer_id = o.customer_id
 JOIN order_items oi ON oi.order_id = o.order_id
-GROUP BY c.customer_id, full_name;
+GROUP BY 1, 2;
 ```
 **Insight**: Top customers contribute significantly to revenue. Retaining them is crucial.
 
@@ -176,7 +176,7 @@ GROUP BY c.customer_id, full_name;
 SELECT
     i.inventory_id,
     p.product_name,
-    i.stock AS current_stock_left,
+    i.stock current_stock_left,
     i.last_stock_date,
     i.warehouse_id
 FROM inventory i
@@ -188,10 +188,10 @@ WHERE i.stock < 10;
 ### 9. Shipping Delays
 ```sql
 SELECT
-    CONCAT(c.first_name, ' ', c.last_name) AS customer,
+    CONCAT(c.first_name, ' ', c.last_name) customer,
     o.*,
     s.shipping_providers,
-    (s.shipping_date - o.order_date) AS days_to_deliver
+    (s.shipping_date - o.order_date) days_to_deliver
 FROM orders o
 JOIN customers c ON c.customer_id = o.customer_id
 JOIN shippings s ON o.order_id = s.order_id
@@ -204,7 +204,7 @@ WHERE s.shipping_date - o.order_date > 2;
 SELECT
     p.payment_status,
     COUNT(*) AS total_payments,
-    ROUND(COUNT(*) * 100 / SUM(COUNT(*)) OVER(), 2) AS percentage
+    ROUND(COUNT(*) * 100 / SUM(COUNT(*)) OVER(), 2) percentage
 FROM orders o
 JOIN payments p ON o.order_id = p.order_id
 GROUP BY 1
@@ -219,7 +219,7 @@ WITH top_sellers AS (
     SELECT
         s.seller_id,
         s.seller_name,
-        SUM(oi.total_sale) AS total_sale
+        SUM(oi.total_sale) total_sale
     FROM orders o
     JOIN sellers s ON o.seller_id = s.seller_id
     JOIN order_items oi ON oi.order_id = o.order_id
@@ -231,16 +231,16 @@ sellers_order_status AS (
     SELECT
         seller_id,
         order_status,
-        COUNT(*) AS total_orders
+        COUNT(*) total_orders
     FROM orders
     GROUP BY 1, 2
 ),
 sellers_report AS (
     SELECT
-        ts.seller_id AS seller_id,
-        ts.seller_name AS seller_name,
-        sos.order_status AS order_status,
-        sos.total_orders AS total_orders
+        ts.seller_id seller_id,
+        ts.seller_name seller_name,
+        sos.order_status order_status,
+        sos.total_orders total_orders
     FROM sellers_order_status sos
     JOIN top_sellers ts ON ts.seller_id = sos.seller_id
     WHERE sos.order_status NOT IN ('Inprogress', 'Returned')
@@ -248,11 +248,11 @@ sellers_report AS (
 SELECT
     seller_id,
     seller_name,
-    SUM(CASE WHEN order_status = 'Completed' THEN total_orders ELSE 0 END) AS completed_orders,
-    SUM(CASE WHEN order_status = 'Cancelled' THEN total_orders ELSE 0 END) AS failed_orders,
-    SUM(total_orders) AS total_orders,
-    ROUND(SUM(CASE WHEN order_status = 'Completed' THEN total_orders ELSE 0 END)::NUMERIC / SUM(total_orders)::NUMERIC * 100, 2) AS successful_orders_percentage,
-    ROUND(100 - (SUM(CASE WHEN order_status = 'Completed' THEN total_orders ELSE 0 END)::NUMERIC / SUM(total_orders)::NUMERIC * 100), 2) AS failed_orders_percentage
+    SUM(CASE WHEN order_status = 'Completed' THEN total_orders ELSE 0 END) completed_orders,
+    SUM(CASE WHEN order_status = 'Cancelled' THEN total_orders ELSE 0 END) failed_orders,
+    SUM(total_orders) total_orders,
+    ROUND(SUM(CASE WHEN order_status = 'Completed' THEN total_orders ELSE 0 END)::NUMERIC / SUM(total_orders)::NUMERIC * 100, 2) successful_orders_percentage,
+    ROUND(100 - (SUM(CASE WHEN order_status = 'Completed' THEN total_orders ELSE 0 END)::NUMERIC / SUM(total_orders)::NUMERIC * 100), 2) failed_orders_percentage
 FROM sellers_report
 GROUP BY 1, 2;
 ```
@@ -264,12 +264,12 @@ SELECT
     product_id,
     product_name,
     profit_margin,
-    DENSE_RANK () OVER(ORDER BY profit_margin DESC) AS product_ranking
+    DENSE_RANK () OVER(ORDER BY profit_margin DESC) product_ranking
 FROM (
     SELECT
         p.product_id,
         p.product_name,
-        SUM(total_sale - (cogs * quantity)) / SUM(total_sale) * 100 AS profit_margin
+        SUM(total_sale - (cogs * quantity)) / SUM(total_sale) * 100 profit_margin
     FROM order_items oi
     JOIN products p ON oi.product_id = p.product_id
     GROUP BY 1, 2
@@ -325,7 +325,7 @@ FROM (
         CONCAT(c.first_name, ' ', c.last_name) customers,
         COUNT(o.order_id) total_orders,
         SUM(oi.total_sale) total_sale,
-        DENSE_RANK() OVER(PARTITION BY c.state ORDER BY COUNT(o.order_id) DESC) as rank
+        DENSE_RANK() OVER(PARTITION BY c.state ORDER BY COUNT(o.order_id) DESC) rank
     FROM orders o
     JOIN order_items oi ON oi.order_id = o.order_id
     JOIN customers c ON c.customer_id = o.customer_id
@@ -341,7 +341,7 @@ SELECT
     s.shipping_providers,
     COUNT(o.order_id) orders_handled,
     ROUND(SUM(oi.total_sale)) total_sale,
-    ROUND(COALESCE(AVG(s.return_date - s.shipping_date), 0)) as average_days
+    ROUND(COALESCE(AVG(s.return_date - s.shipping_date), 0)) average_days
 FROM orders o
 JOIN order_items oi ON oi.order_id = o.order_id
 JOIN shippings s ON s.order_id = o.order_id
