@@ -1,5 +1,7 @@
 # 📊 Data-Driven Decisions: Amazon Marketplace Analysis with SQL
 
+![Amazon](images/amazon.png)
+
 ## 🧠 Overview
 This project is a comprehensive SQL-based analysis of Amazon marketplace data. Using PostgreSQL and structured SQL queries, I explored various business metrics such as sales performance, customer behavior, inventory management, shipping delays, and more.
 
@@ -25,6 +27,8 @@ All data is derived from simulated Amazon marketplace records:
 - `payments.csv`
 - `shipping.csv`
 - `category.csv`
+
+![EDR for amazon_sql](images/edr_for_amazon_sql.png)
 
 ## 📥 Data Source
 The dataset used in this project was sourced from [Zero Analyst on Topmate](https://topmate.io/zero_analyst/1210661).
