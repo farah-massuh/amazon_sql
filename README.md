@@ -26,6 +26,11 @@ All data is derived from simulated Amazon marketplace records:
 - `shipping.csv`
 - `category.csv`
 
+## 📥 Data Source
+The dataset used in this project was sourced from [Zero Analyst on Topmate](https://topmate.io/zero_analyst/1210661).
+
+Note: This dataset simulates real-world Amazon marketplace activity and is intended for learning and project-building purposes.
+
 ## 🛠️ Tools & Technologies
 - **SQL (PostgreSQL)** – Core querying and analysis
 - **VS Code** – Development environment
