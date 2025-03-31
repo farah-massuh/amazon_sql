@@ -6,24 +6,6 @@ This project is a comprehensive SQL-based analysis of Amazon marketplace data. U
 ## 👩‍💻 Author
 **Farah Massuh**
 
-## 📂 Datasets Used
-All data is derived from simulated Amazon marketplace records:
-
-- `orders.csv`
-- `order_items.csv`
-- `products.csv`
-- `inventory.csv`
-- `customers.csv`
-- `sellers.csv`
-- `payments.csv`
-- `shipping.csv`
-- `category.csv`
-
-## 🛠️ Tools & Technologies
-- **SQL (PostgreSQL)** – Core querying and analysis
-- **VS Code** – Development environment
-- **ChatGPT** – For query optimization and explanation
-
 ## 🎯 Project Objectives
 - Identify high-performing products, sellers, and regions
 - Analyze customer lifetime value and buying trends
