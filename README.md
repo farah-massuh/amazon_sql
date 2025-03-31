@@ -65,6 +65,8 @@ GROUP BY 1, 2
 ORDER BY 3 DESC
 LIMIT 10;
 ```
+![Top Selling Products](business_query_results/1.top_selling_products.png)
+
 **Insight**: A small number of products contribute significantly to total revenue and order volume. These are key revenue drivers.
 
 ### 2. Revenue by Category
@@ -80,6 +82,8 @@ LEFT JOIN category c ON c.category_id = p.category_id
 GROUP BY 1, 2
 ORDER BY 3 DESC;
 ```
+![Revenue by Category](business_query_results/2.revenue_by_category.png)
+
 **Insight**: Electronics and related categories account for the highest revenue contribution across the platform.
 
 ### 3. Average Order Value (AOV)
@@ -96,6 +100,8 @@ GROUP BY 1
 HAVING COUNT(o.order_id) > 5
 ORDER BY 4 DESC;
 ```
+![Average Order Value (AOV)](business_query_results/3.average_order_value.png)
+
 **Insight**: Returning customers have significantly higher AOV, suggesting a loyal and valuable customer segment.
 
 ### 4. Monthly Sales Trend
@@ -117,6 +123,8 @@ SELECT
     LAG(total_sale, 1) OVER (ORDER BY year, month) last_month_sale
 FROM month_total_sales_past_year;
 ```
+![Monthly Sales Trend](business_query_results/4.monthly_sales_trend.png)
+
 **Insight**: Sales trends fluctuate monthly with noticeable seasonal patterns. Comparing current and previous months helps detect growth or decline.
 
 ### 5. Customers with No Purchases
@@ -128,6 +136,8 @@ WHERE customer_id NOT IN (
     FROM orders
 );
 ```
+![Customers with No Purchases](business_query_results/5.customers_with_no_purchases.png)
+
 **Insight**: There is a segment of registered users who have not placed any orders — potential for re-engagement campaigns.
 
 ### 6. Best-Selling Categories by State
@@ -153,6 +163,8 @@ FROM ranked_sales
 WHERE rank = 1
 ORDER BY 1, 3 DESC;
 ```
+![Best-Selling Categories by State](business_query_results/6.bestselling_categories_by_state.png)
+
 **Insight**: Different states show varied preferences, enabling region-specific marketing strategies.
 
 ### 7. Customer Lifetime Value (CLTV)
@@ -167,6 +179,8 @@ JOIN customers c ON c.customer_id = o.customer_id
 JOIN order_items oi ON oi.order_id = o.order_id
 GROUP BY 1, 2;
 ```
+![Customer Lifetime Value (CLTV)](business_query_results/7.customer_lifetime_value.png)
+
 **Insight**: Top customers contribute significantly to revenue. Retaining them is crucial.
 
 (Continued in next cell...)
@@ -183,6 +197,8 @@ FROM inventory i
 JOIN products p ON p.product_id = i.product_id
 WHERE i.stock < 10;
 ```
+![Inventory Stock Alerts](business_query_results/8.inventory_stock_alerts.png)
+
 **Insight**: Several high-demand products are at risk of going out of stock, requiring urgent restocking.
 
 ### 9. Shipping Delays
@@ -197,6 +213,8 @@ JOIN customers c ON c.customer_id = o.customer_id
 JOIN shippings s ON o.order_id = s.order_id
 WHERE s.shipping_date - o.order_date > 2;
 ```
+![Shipping Delays](business_query_results/9.shipping_delays.png)
+
 **Insight**: Many orders experience shipping delays beyond 2 days, indicating potential issues with fulfillment partners.
 
 ### 10. Payment Success Rate
@@ -210,6 +228,8 @@ JOIN payments p ON o.order_id = p.order_id
 GROUP BY 1
 ORDER BY 3 DESC;
 ```
+![Payment Success Rate](business_query_results/10.payment_success_rate.png)
+
 **Insight**: While most payments succeed, a notable percentage are either pending or failed, suggesting a need for payment system improvements.
 
 ### 11. Top Performing Sellers
@@ -256,6 +276,8 @@ SELECT
 FROM sellers_report
 GROUP BY 1, 2;
 ```
+![Top Performing Sellers](business_query_results/11.top_perfomring_sellers.png)
+
 **Insight**: Top sellers show high order completion rates, but a few face elevated cancellation rates—warranting performance reviews.
 
 ### 12. Product Profit Margin
@@ -275,6 +297,8 @@ FROM (
     GROUP BY 1, 2
 );
 ```
+![Product Profit Margin](business_query_results/12.product_profit_margin.png)
+
 **Insight**: Certain products yield significantly higher margins, guiding profitability-focused inventory and pricing strategies.
 
 ### 13. Most Returned Products
@@ -296,6 +320,8 @@ FROM (
 ORDER BY return_percentage DESC
 LIMIT 10;
 ```
+![Most Returned Products](business_query_results/13.most_returned_products.png)
+
 **Insight**: Return rates vary by product. High-return items may need review for quality, expectations, or listing accuracy.
 
 ### 14. Identify Returning vs. New Customers
@@ -314,6 +340,8 @@ FROM (
     GROUP BY 1
 );
 ```
+![Identify Returning vs. New Customers](business_query_results/14.identify_customers.png)
+
 **Insight**: Customer behavior varies based on return activity—this can be useful for segmentation and tailored engagement.
 
 ### 15. Top 5 Customers by Orders per State
@@ -333,6 +361,8 @@ FROM (
 )
 WHERE rank <= 5;
 ```
+![Top 5 Customers by Orders per State](business_query_results/1.top_selling_products.png)
+
 **Insight**: Top customers in each state reveal regional power users that drive local revenue.
 
 ### 16. Revenue by Shipping Provider
@@ -347,6 +377,8 @@ JOIN order_items oi ON oi.order_id = o.order_id
 JOIN shippings s ON s.order_id = o.order_id
 GROUP BY 1;
 ```
+![Revenue by Shipping Provider](business_query_results/16.revenue_by_shipping_provider.png)
+
 **Insight**: Shipping providers vary in speed and volume. Some are slower despite handling fewer orders.
 
 ### 17. Products with Revenue Decline (2023 vs 2024)
@@ -380,6 +412,8 @@ WHERE ls.revenue > cs.revenue
 ORDER BY 6 DESC
 LIMIT 10;
 ```
+![Products with Revenue Decline (2023 vs 2024)](business_query_results/17.top_10_products_with_highest_decreasing_revenue_ratio.png)
+
 **Insight**: Revenue decline detection helps flag underperforming products for reevaluation in 2024.
 
 ---
